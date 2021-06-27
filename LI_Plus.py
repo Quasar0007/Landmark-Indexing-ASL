@@ -27,6 +27,8 @@ for (u,v,l) in edges:
 	degree[v]+=1
 
 	# Increment the degree of each vertex since each outgoing as well as incoming edge count towards the increase in degree of the vertex
+global landmark_vertices
+global Indexed
 
 def Landmark_Index_Plus(degree, Adjacency_List_For_Representation, k, b):
 	degree_list = []
@@ -60,7 +62,7 @@ def Landmark_Index_Plus(degree, Adjacency_List_For_Representation, k, b):
 		L_Ind[i]=[]
 		Reachable_By[i]=[]
 		LabeledBFSPerLM_Plus(i)
-	#L_Ind(i) will store all the (w,L)(in tuple form only) belonging to V*2^L , such that w is reachable to 'v' via the minimal labeled set 'L' using the procedure LabeledBFSPerLM_Plus. It is only for the landmark vertices.
+	#L_Ind(v) will store all the (w,L)(in tuple form only) belonging to V*2^L , such that w is reachable to 'v' via the minimal labeled set 'L' using the procedure LabeledBFSPerLM_Plus. It is only for the landmark vertices.
 	#Reachable_By(s) stores all the vertices reachable by vertex 's' along with the label that it has.
 
 	for (vertex, deg) in sorted_degree_list[::-1][k:]:
@@ -69,8 +71,8 @@ def Landmark_Index_Plus(degree, Adjacency_List_For_Representation, k, b):
 
 	for i in non_landmark_vertices:
 		NL_Ind[i] = []
-		LabeledBFSPerNonLM(i, b)
-			#NL_Ind(i) will store all the (w,L)(in tuple form only) belonging to V*2^L , such that w is reachable to 'v' via the minimal labeled set 'L' using the procedure LabeledBFSPerNonLM. It is only for the non-landmark vertices.
+		LabeledBFSPerNonLM(i, b, Adjacency_List_For_Representation)
+			#NL_Ind(v) will store all the (w,L)(in tuple form only) belonging to V*2^L , such that w is reachable to 'v' via the minimal labeled set 'L' using the procedure LabeledBFSPerNonLM. It is only for the non-landmark vertices where 'w' is always a landmark vertex.
 
 
 
@@ -134,30 +136,52 @@ def powerset(s):
         yield [ss for mask, ss in zip(masks, s) if i & mask]
 
 
-global Ind
-Ind={}
-
 def TryInsert(s, (v,L)):  #s and v are vertices and L is the label set
+	if s in landmark_vertices:
+		c=L_Ind[s]
+	else:
+		c=NL_Ind[s]
+
 	if v==s:
 		return True
 
 	#If there is a subset of L that already exists in the Ind[s] that helps it to reach v , we return False as we can't insert (v,L) because of the criteria that Ind[s] should only contain the minimal label set
 	for subL in list(powerset(L)):
-		if (v,subL) in Ind[s]:
+		if (v,subL) in c:
 			return False
 
 	# if there is some other label for v present in Ind[s] that is a superset of the label L, we remove that superset label to maintain the criteria of minimal label set
-	for (v,l) in Ind[s]:
+	for (v,l) in c:
 		if checkInFirst(l, L) :
-			Ind[s].remove(v,l)
-	Ind[s].append(v,L)
-	Ind[s]=sorted(ind[s], key=lambda x:x[0]) #Replace this with binary search
+			c.remove(v,l)
+	c.append(v,L)
+	c=sorted(c, key=lambda x:x[0]) #Replace this with binary search
 	return True
 
 # This function is used to expand the index of s using the Ind[v] which also is a landmark vertex
 def ForwardProp(s, (v,L)):
-	for (w,l) in Ind[v]:
+	if v in landmark_vertices:
+		c=L_Ind[v]
+	else:
+		c=NL_Ind[v]
+
+	for (w,l) in c:
 		TryInsert(s,(w,list(set(L+l))))
+
+# This function is used to expand the index of s using the Ind[v] which has already been indexed.
+def ForwardPropNonLM(s, (v,L)):
+	if v in landmark_vertices:
+		c=L_Ind[v]
+	else:
+		c=NL_Ind[v]
+
+	for (w,l) in c:
+		if w in landmark_vertices:
+			if len(NL_Ind[s])<b:
+				TryInsert(s,(w,list(set(L+l))))
+			else:
+				break
+
 
 
 
@@ -207,11 +231,55 @@ def LabeledBFSPerLM_Plus(s):
 
 	Indexed[s]=True
 	#We mark the vertex as indexed once it has been processed and all the reachable vertices with their corresponding labels are inserted.
+global Marked
+
+def LabeledBFSPerNonLM(s,b, Adjacency_List_For_Representation):
+	q=PriorityQueue()
+	node = Node(s, [])
+	q.insert(node)
+	Marked = {}
+	for v in Adjacency_List_For_Representation.keys():
+		Marked[v] = False
+	# Initial setup and marking all the vertices as False to show they haven't been reached yet.
+
+	while q!=[] and len(NL_Ind[s])<b: #'b' is experimentally determined and we run this only till we find 'b' reachable vertices from 's'.
+		v,L = q.delete()
+		if Marked[v] == True:
+			continue
+		#If v has already been processes, we see for the next iteration
+
+		Marked[v] = True
+		# If v hasn't been yet processed we mark it as processed now.
+
+		if (v in landmark_vertices) and TryInsert(s, (v,L))==False:
+			continue
+		#If v is a landmark vertex and (v,L) isn't reachable from s, we start the next iteration.
+
+		if Indexed[v] ==True:
+			ForwardPropNonLM(s,(v,L))
+			continue
+		#If we have already indexed the vertex v that is we know Ind[v] because surely sometime we must've called LabeledBFSPerLM_Plus or LabeledBFSPerNonLM, we run the ForwardProp to expand the Ind[s] using the Ind[v]
 
 
+		for (w,l) in Adjacency_List_For_Representation[v]:
+			node = Node(w, list(set(L+l)))
+			q.insert(node)
+		#Add all the edges from v to the queue.
 
-# The query algorithm
+	Indexed[s] = True
+	# Mark the index of 's' as true after completing Ind[s]
 
+def QueryExtensive(s,t,L,Marked):
+	if QueryLandmark(s,t,L) == True:
+		return True
+	for (S,l) in Reachable_By[s]:
+		if checkInFirst(L,l):
+			Marked[S] = True
+			break
+	return False
+#The QueryExtensive runs for only Landmark vertices and we check if its true by QueryLandmark procedure, if it's false we mark all the vertices 'S' reachable by 's' for whom 'l' is a subset of 'L'
+
+# The query algorithm for Landmark vertices only
 def QueryLandmark(s,t,L):
 	for i in Ind[s]:
 		if i[0]==t:
@@ -221,9 +289,8 @@ def QueryLandmark(s,t,L):
 
 	return False
 
-Marked={}
-
-def query(s,t,L):
+# The query plus algorithm
+def Query_plus(s,t,L):
 	if s in landmark_vertices:
 		return QueryLandmark(s,t,L)
 		#If 's' is a landmark vertex, we directly use the QueryLandmark method to output the result of the query since we have already created indices for the landmark vertices.
@@ -231,6 +298,12 @@ def query(s,t,L):
 	for v in Adjacency_List_For_Representation.keys():
 		Marked[v]=False
 	#We keep the visited record for the vertex as if it has been visited or not.
+
+	for (v,l) in NL_Ind[s]:
+		if checkInFirst(L,l):
+			if QueryExtensive(v,t,L, Marked) ==True:
+				return True
+		Marked[v] = True
 
 	q=[]
 	q.append(s)
@@ -242,7 +315,7 @@ def query(s,t,L):
 		#The queue 'q' here contains all the nodes that are reached using 's', if the popped out node is 't' itself, then 't' is reached by 's' and that's what the first 'if' statement says.
 		
 		if v in landmark_vertices:
-			if QueryLandmark(v,t,L)==True:
+			if QueryExtensive(v,t,L, Marked)==True:
 				return True
 			continue
 		#If v is a landmark vertex that's reachable from 's' , we see if the target vertex 't' is reachable from that landmark vertex 'v', if it is , we return True, else we return to the for loop to pop out other vertex from the queue.

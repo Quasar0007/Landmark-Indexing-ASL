@@ -1,7 +1,30 @@
 from collections import Counter
 
-global labels
+num_vert, num_edg, num_lab = map(int,input().split())
+
+
+vertices=[]
+edges=[]
+labels=[]
 #labels will be the list of all labels that we have
+
+
+for _ in range(num_vert):
+	vertices.append(int(input()))
+
+for _ in range(num_edg):
+	a,b,c = int(input()), int(input()), list(map(str, input().split()))
+	# a=int(a)
+	# b=int(b)
+	# c=list(c)
+	edges.append((a,b,c))
+
+for _ in range(num_lab):
+	labels.append(input())
+
+print(vertices)
+print(edges)
+print(labels)
 
 # We have to represent the graph using Adjacency List using a dictionary
 Adjacency_List_For_Representation = {}
@@ -19,18 +42,28 @@ for node in vertices:
 # 'edges' is the set of all the directed edges along with the labels that we have been given.
 for (u,v,l) in edges:
 	Adjacency_List_For_Representation[u].append((v,l))
-
-	# The loop from lines 10&11 adds all the vertices that are directly connected to a given vertex/node along with their labels.
+	# The loop of above lines adds all the vertices that are directly connected to a given vertex/node along with their labels.
 	# Here, the label could also be a set
 
 	degree[u]+=1
 	degree[v]+=1
-
 	# Increment the degree of each vertex since each outgoing as well as incoming edge count towards the increase in degree of the vertex
-global landmark_vertices
-global Indexed
+
+Indexed={}
+landmark_vertices=[]
+non_landmark_vertices=[]
+L_Ind={}
+NL_Ind={}
+Reachable_By = {}
+
+
 
 def Landmark_Index_Plus(degree, Adjacency_List_For_Representation, k, b):
+	global landmark_vertices
+	global non_landmark_vertices
+	global Indexed
+
+
 	degree_list = []
 	#To store the vertices and their degrees in a list so that we can sort it later
 
@@ -41,22 +74,19 @@ def Landmark_Index_Plus(degree, Adjacency_List_For_Representation, k, b):
 	sorted_degree_list = sorted(degree_list, key=lambda x:x[1])
 	#sorted_degree_list contains all the keys that are sorted on the basis of their values, that is, their degrees in our case.
 
-	landmark_vertices=[]
-	non_landmark_vertices=[]
 	#List to store all the 'k' landmark vertices and the remaining non-landmark vertices
 
-	while ((vertex,deg) in sorted_degree_list[::-1]) and k>0 :
-		landmark_vertices.append(vertex)
-		k-=1
-	#The while loop from 40 to 42 helps us to store the 'k' landmark vertices with the highest degree.
+	for (vertex,deg) in sorted_degree_list[::-1]:
+		if k>0:
+			landmark_vertices.append(vertex)
+			k-=1
+		else:
+			break
+	#The while loop helps us to store the 'k' landmark vertices with the highest degree.
 
-	Indexed = {}
 	for v in Adjacency_List_For_Representation.keys():
 		Indexed[v]= False
 	#Set the index of all the vertices to False to represent which vertices has been indexed and which one hasn't been
-	L_ind={}
-	NL_Ind={}
-	Reachable_By = {}
 	
 	for i in landmark_vertices:
 		L_Ind[i]=[]
@@ -89,30 +119,37 @@ class PriorityQueue:
   
   def __init__(self):
     self.queue = list()
+    self.size = len(self.queue)
     
   def insert(self, node):
     # if queue is empty
-    if self.size() == 0:
+    if self.size == 0:
       # add the new node
       self.queue.append(node)
+      self.size = self.size+1
+
     else:
       # traverse the queue to find the right place for new node
-      for x in range(0, self.size()):
+      for x in range(0, self.size):
         # if the length of label of new node is greater
         if len(node.label) >= len(self.queue[x].label):
           # if we have traversed the complete queue
-          if x == (self.size()-1):
+          if x == (self.size-1):
             # add new node at the end
             self.queue.append(node)
+            self.size+=1
           else:
             continue
         else:
           self.queue.insert(x, node)
+          self.size+=1
           return True
-  
+
   def delete(self):
-    # remove the first node from the queue
-    return self.queue.pop(0)
+  	# remove the first node from the queue
+  	self.size-=1
+  	return self.queue.pop(0)
+
  
  #The checkInFirst function is used to check if the argument list b is subset of the argument list a. 
 def checkInFirst(a, b):
@@ -136,49 +173,55 @@ def powerset(s):
         yield [ss for mask, ss in zip(masks, s) if i & mask]
 
 
-def TryInsert(s, (v,L)):  #s and v are vertices and L is the label set
+def TryInsert(s, t):  #s and v are vertices and L is the label set
+	global landmark_vertices
+	global L_Ind
+	global NL_Ind
+	global Reachable_By
+
+
 	if s in landmark_vertices:
 		c=L_Ind[s]
 	else:
 		c=NL_Ind[s]
 
-	if v==s:
+	if t[0]==s:
 		return True
 
 	#If there is a subset of L that already exists in the Ind[s] that helps it to reach v , we return False as we can't insert (v,L) because of the criteria that Ind[s] should only contain the minimal label set
-	for subL in list(powerset(L)):
-		if (v,subL) in c:
+	for subL in list(powerset(t[1])):
+		if (t[0],subL) in c:
 			return False
 
 	# if there is some other label for v present in Ind[s] that is a superset of the label L, we remove that superset label to maintain the criteria of minimal label set
-	for (v,l) in c:
-		if checkInFirst(l, L) :
-			c.remove(v,l)
-	c.append(v,L)
+	for (t[0],l) in c:
+		if checkInFirst(l, t[1]) :
+			c.remove(t[0],l)
+	c.append((t[0],t[1]))
 	c=sorted(c, key=lambda x:x[0]) #Replace this with binary search
 	return True
 
 # This function is used to expand the index of s using the Ind[v] which also is a landmark vertex
-def ForwardProp(s, (v,L)):
+def ForwardProp(s, t):
 	if v in landmark_vertices:
-		c=L_Ind[v]
+		c=L_Ind[t[0]]
 	else:
-		c=NL_Ind[v]
+		c=NL_Ind[t[0]]
 
 	for (w,l) in c:
-		TryInsert(s,(w,list(set(L+l))))
+		TryInsert(s,(w,list(set(t[1]+l))))
 
 # This function is used to expand the index of s using the Ind[v] which has already been indexed.
-def ForwardPropNonLM(s, (v,L)):
+def ForwardPropNonLM(s, t):
 	if v in landmark_vertices:
-		c=L_Ind[v]
+		c=L_Ind[t[0]]
 	else:
-		c=NL_Ind[v]
+		c=NL_Ind[t[0]]
 
 	for (w,l) in c:
 		if w in landmark_vertices:
 			if len(NL_Ind[s])<b:
-				TryInsert(s,(w,list(set(L+l))))
+				TryInsert(s,(w,list(set(t[1]+l))))
 			else:
 				break
 
@@ -188,14 +231,19 @@ def ForwardPropNonLM(s, (v,L)):
 
 #'s' is a landmark vertex here
 def LabeledBFSPerLM_Plus(s):
+	global Indexed
 
 	q=PriorityQueue()
 	node = Node(s, [])
 	q.insert(node)
 	# Initializing a min-priority queue using the created class Priority Queue
 
-	while q!=[]:
-		v, L = q.delete()
+	while q.size!=0:
+		print(q)
+		z = q.delete()
+		print(z)
+
+		v, L = z.info, z.label
 		#This provides us the vertex and the label of the set that has the least length of all the labels present in the min-priority-queue.
 
 		if TryInsert(s, (v,L)) == False:
@@ -214,7 +262,6 @@ def LabeledBFSPerLM_Plus(s):
 			ForwardProp(s, (v,L))
 			continue
 		#If we have already indexed the landmark vertex v, we run the ForwardProp to expand the Ind[s] using the Ind[v]
-
 		for (w,l) in Adjacency_List_For_Representation[v]:
 			node = Node(w, list(set(L+l)))
 			q.insert(node)
@@ -231,19 +278,21 @@ def LabeledBFSPerLM_Plus(s):
 
 	Indexed[s]=True
 	#We mark the vertex as indexed once it has been processed and all the reachable vertices with their corresponding labels are inserted.
-global Marked
+
+Marked = {}
+
 
 def LabeledBFSPerNonLM(s,b, Adjacency_List_For_Representation):
 	q=PriorityQueue()
 	node = Node(s, [])
 	q.insert(node)
-	Marked = {}
 	for v in Adjacency_List_For_Representation.keys():
 		Marked[v] = False
 	# Initial setup and marking all the vertices as False to show they haven't been reached yet.
 
-	while q!=[] and len(NL_Ind[s])<b: #'b' is experimentally determined and we run this only till we find 'b' reachable vertices from 's'.
-		v,L = q.delete()
+	while q.size!=0 and len(NL_Ind[s])<b: #'b' is experimentally determined and we run this only till we find 'b' reachable vertices from 's'.
+		z = q.delete()
+		v,L = z.info, z.label
 		if Marked[v] == True:
 			continue
 		#If v has already been processes, we see for the next iteration
@@ -291,6 +340,11 @@ def QueryLandmark(s,t,L):
 
 # The query plus algorithm
 def Query_plus(s,t,L):
+
+	global landmark_vertices
+	global Marked
+	global NL_Ind
+
 	if s in landmark_vertices:
 		return QueryLandmark(s,t,L)
 		#If 's' is a landmark vertex, we directly use the QueryLandmark method to output the result of the query since we have already created indices for the landmark vertices.
@@ -298,17 +352,17 @@ def Query_plus(s,t,L):
 	for v in Adjacency_List_For_Representation.keys():
 		Marked[v]=False
 	#We keep the visited record for the vertex as if it has been visited or not.
-
-	for (v,l) in NL_Ind[s]:
-		if checkInFirst(L,l):
-			if QueryExtensive(v,t,L, Marked) ==True:
-				return True
-		Marked[v] = True
+	if s in NL_Ind.keys():
+		for (v,l) in NL_Ind[s]:
+			if checkInFirst(L,l):
+				if QueryExtensive(v,t,L, Marked) ==True:
+					return True
+			Marked[v] = True
 
 	q=[]
 	q.append(s)
 	while q!=[]:
-		v=l.pop()
+		v=q.pop()
 		Marked[v]=True
 		if v==t:
 			return True
@@ -328,9 +382,7 @@ def Query_plus(s,t,L):
 
 	return False
 
-
-
-
+print(Query_plus(2,1,['p']))
 
 
 

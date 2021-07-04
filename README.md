@@ -1,7 +1,7 @@
 # Landmark-Indexing-ASL
 This repository contains the entire code for Landmark Indexing currently and soon will have the clean code for the ASL algorithm.
 
-How to run this code? ___
+How to run this code? </br>
 Download the code and run it on any text editor(lets say Sublime Text) following the steps below:-
 - Open the command terminal and get relocated to the directory containing the file 'LI_Plus.py'
 - On the command terminal, run the command 'python Li_plus.py'.

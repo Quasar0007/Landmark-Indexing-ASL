@@ -12,13 +12,13 @@ Download the code and run it on any text editor(lets say Sublime Text) following
 
 Example : - For a graph with 2 vertices namely 1 and 2 with a directed edge from 2 to 1 having the label ["follow", "friend"] from a set of labels ["follow", "friend", "connection"] will be provided as input in the following way:-
 
-2 1 3
-1
-2
-2 1 follow friend
-follow
-friend
-connection
+- 2 1 3
+- 1
+- 2
+- 2 1 follow friend
+- follow
+- friend
+- connection
 
 
 

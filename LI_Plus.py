@@ -382,7 +382,7 @@ def Query_plus(s,t,L):
 
 	return False
 
-print(Query_plus(2,1,['p']))
+# print(Query_plus(2,1,['p']))
 
 
 

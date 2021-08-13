@@ -52,7 +52,7 @@ The input in this case would be:-
 - 2 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; #*Number of lnadmark vertices*
 - 5 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; #*Source vertex*
 - 3 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; #*Target vertex*
-- a b &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; #*Labels.*
+- a b &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;#*Labels.*
 
 
 

@@ -1,7 +1,7 @@
 # Landmark-Indexing-ASL
 The entire code for Landmark Indexing and ASL algorithm is present here.
 
-How to run this code? </br>
+How to run the code for LI_Plus algorithm? </br>
 Download the code and run it on any text editor(lets say Sublime Text) following the steps below:-
 - Open the command terminal and get relocated to the directory containing the file 'LI_Plus.py'
 - On the command terminal, run the command 'python Li_plus.py'.
@@ -20,6 +20,18 @@ Example : - For a graph with 2 vertices namely 1 and 2 with a directed edge from
 - follow
 - friend
 - connection
+
+How to run the code for ASL algorithm? </br>
+Download the code and run it on any text editor(lets say Sublime Text) following the steps below:-
+- Open the command terminal and get relocated to the directory containing the file 'ASL.py'
+- On the command terminal, run the command 'python ASL.py'.
+- Input on the first line should be the number of vertices(n).
+- The second line should be the number of edges(m).
+- The next m lines would contain the edges with three input items in each line separated by spaces, respectively the source vertex, the target vertex and the label.
+- The next line would contain the number of labels(l).
+- The next l lines would contain all the label names , one in each line.
+- The next line contains the number of landmark vertices.
+- The third last, second last and last line takes the source vertex, target vertex and the label as input respectively.(The input label should be separated by spaces if there are more than one labels.
 
 **ASL-Example** </br>
 ![image](https://user-images.githubusercontent.com/66168933/129321351-0d7e4bbb-fa50-4617-9f2e-cc01b32c2d7e.png)

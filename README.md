@@ -54,7 +54,8 @@ The input in this case would be:-
 - 3 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; #*Target vertex*
 - a b &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;#*Labels.*
 
-![image](https://user-images.githubusercontent.com/66168933/129329795-61b0dedd-64a3-4ba6-99ab-348cacd1888a.png)
+![Screenshot (125)](https://user-images.githubusercontent.com/66168933/129329966-a21597cf-3341-4ac2-8f09-2e49d687e0f9.png)
+
 
 
 

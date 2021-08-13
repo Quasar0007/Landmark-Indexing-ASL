@@ -10,7 +10,7 @@ Download the code and run it on any text editor(lets say Sublime Text) following
 - The next m lines would contain the edges with each line having the index of source vertex, index of target vertex and the set of labels associated with the edge.
 - The next l lines would contain all the label names , one in each line.
 
-#Landmark-Indexing-Plus Example
+#Landmark-Indexing-Plus Example </br>
 Example : - For a graph with 2 vertices namely 1 and 2 with a directed edge from 2 to 1 having the label ["follow", "friend"] from a set of labels ["follow", "friend", "connection"] will be provided as input in the following way:-
 
 - 2 1 3

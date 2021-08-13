@@ -27,7 +27,7 @@ Example : - For a graph with 2 vertices namely 1 and 2 with a directed edge from
 Lets say we need to find the query that vertex '6' reaches to vertex '4' constrained to the labels ['a','b']. </br>
 The vertices are indexed from '0' instead of 1, so vertex '3' is given as input '2'.
 The input in this case would be:-
-
+<pre>
 - 10                                         #*Number of vertices*
 - 15                                         #*Number of edges and next 15 lines represent the edges.*
 - 0 1 a  
@@ -52,7 +52,7 @@ The input in this case would be:-
 - 2                                           #*Number of lnadmark vertices*
 - 5                                           #*Source vertex*
 - 3                                           #*Target vertex*
-- a b                                         #*Labels.*
+- a b                                         #*Labels.* </pre>
 
 
 
